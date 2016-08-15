@@ -1,7 +1,6 @@
 # etcd - install
 
 class etcd::install inherits etcd {
-  include jtv_root::params
 
   if $caller_module_name != $module_name {
     fail("Use of private class ${name} by ${caller_module_name}")
@@ -24,13 +23,12 @@ class etcd::install inherits etcd {
     uid        => $etcd::params::user_uid,
     membership => 'minimum',
     gid        => $etcd::params::group_name,
-    require    => File[$jtv_root::params::supporthome_dir], # <-- from jtv_root module
   }
 
   # Install etcd package
-  package { 'jtv-etcd' :
+  package { 'etcd' :
     ensure  => present,
-    require => [ User['etcd'], Repo['jtv-apps'] ],
+    require => [ User['etcd'], Repo['inhouse-apps'] ],
   }
 
   # Ensure the etcd service home directory exists
@@ -40,7 +38,6 @@ class etcd::install inherits etcd {
     mode   => '0755',
     owner  => $etcd::params::user_name,
     group  => $etcd::params::group_name,
-    require => File[$jtv_root::params::support_dir], # <-- from jtv_root module
   }
 
   # Ensure the etcd data directory exists
@@ -50,7 +47,5 @@ class etcd::install inherits etcd {
     mode    => '0755',
     owner   => $etcd::params::user_name,
     group   => $etcd::params::group_name,
-    require => File['etcd_service_dir'],
   }
-
 }
