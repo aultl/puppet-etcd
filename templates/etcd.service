@@ -1,0 +1,38 @@
+# THIS FILE IS MANAGED BY PUPPET!
+[Unit]
+Description=Etcd daemon
+After=local-fs.target network.target
+
+[Service]
+User=etcd
+Type=simple
+WorkingDirectory=/services/etcd_server/current
+Environment="ETCD_NAME=<%=@hostname%>"
+Environment="ETCD_DATA_DIR=<%=@data_dir%>"
+<% if @cluster_name -%>
+Environment="ETCD_INITIAL_CLUSTER_TOKEN=etcd_<%=@cluster_name%>"
+Environment="ETCD_INITIAL_CLUSTER_STATE=<%=@initial_cluster_state%>"
+Environment="ETCD_INITIAL_CLUSTER=<%=@initial_cluster%>"
+<% end -%>
+<% if @listen_https -%>
+Environment="ETCD_CERT_FILE=<%=@cert_path-%>/<%=@ssl_cert%>"
+Environment="ETCD_KEY_FILE=<%=@cert_path-%>/<%=@ssl_key%>"
+Environment="ETCD_PEER_CERT_FILE=<%=@cert_path-%>/<%=@ssl_cert%>"
+Environment="ETCD_PEER_KEY_FILE=<%=@cert_path-%>/<%=@ssl_key%>"
+Environment="ETCD_LISTEN_CLIENT_URLS=https://<%=@ipaddress-%>:<%=@client_port%>"
+Environment="ETCD_LISTEN_PEER_URLS=https://<%=@ipaddress-%>:<%=@peer_port%>"
+Environment="ETCD_ADVERTISE_CLIENT_URLS=https://<%=@ipaddress-%>:<%=@client_port%>"
+<% else -%>
+Environment="ETCD_LISTEN_CLIENT_URLS=http://<%=@ipaddress-%>:<%=@client_port%>"
+Environment="ETCD_LISTEN_PEER_URLS=http://<%=@ipaddress-%>:<%=@peer_port%>"
+Environment="ETCD_ADVERTISE_CLIENT_URLS=http://<%=@ipaddress-%>:<%=@client_port%>"
+<% end -%>
+<% if @client_cert_auth -%>
+Environment="ETCD_CLIENT_CERT_AUTH=yes"
+Environment="ETCD_TRUSTED_CA_FILE=<%=@cert_path-%>/<%=@trusted_ca_file%>"
+<% end -%>
+ExecStart=/services/etcd_server/current/etcd 
+PIDFile=/var/run/etcd.pid
+
+[Install]
+WantedBy=multi-user.target
