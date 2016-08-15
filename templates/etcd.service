@@ -6,7 +6,7 @@ After=local-fs.target network.target
 [Service]
 User=etcd
 Type=simple
-WorkingDirectory=/services/etcd_server/current
+WorkingDirectory=<%= @service_path %>/current
 Environment="ETCD_NAME=<%=@hostname%>"
 Environment="ETCD_DATA_DIR=<%=@data_dir%>"
 <% if @cluster_name -%>
@@ -31,7 +31,7 @@ Environment="ETCD_ADVERTISE_CLIENT_URLS=http://<%=@ipaddress-%>:<%=@client_port%
 Environment="ETCD_CLIENT_CERT_AUTH=yes"
 Environment="ETCD_TRUSTED_CA_FILE=<%=@cert_path-%>/<%=@trusted_ca_file%>"
 <% end -%>
-ExecStart=/services/etcd_server/current/etcd 
+ExecStart=<%= @service_path %>/current/etcd 
 PIDFile=/var/run/etcd.pid
 
 [Install]
