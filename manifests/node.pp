@@ -4,12 +4,32 @@ define etcd::node (
   $client_port      = '2379', 
   $peer_port        = '2380', 
   $listen_https     = false, 
+  $use_iptables     = 'no', 
   $ssl_cert         = undef, 
   $ssl_key          = undef, 
   $client_cert_auth = false,
   $trusted_ca_file  = undef,
-  $data_dir = $etcd::params::data_dir
+  $service_path     = $etcd::params::service_path,
+  $data_dir         = $etcd::params::data_dir,
+  $user_name        = $etcd::params::user_name,
+  $cluster_name     = '',
+  $cluster_state    = 'new',
+  $inital_cluster   = '',
 ) {
+
+  # validate cluster_state
+  validate_array_member($cluster_state, ['new','existing'])
+
+  if ( size($cluster_name) > 1 ) {
+    # make sure our cluster name is actually a string
+    validate_string($cluster_name)
+
+    # if the user specified a cluster_name, we should know the other members
+    validate_hash($initial_cluster)
+
+    # create a cluster token for safety
+    $cluster_token = sha1_sum($cluter_name)
+  }
 
   # Do we want to use SSL certs? 
   # TODO: allow different certs for client use and peer use;
@@ -77,6 +97,13 @@ define etcd::node (
     content => template("${module_name}/etcd.service"),
     owner   => 'root',
     group   => 'root',
+  }
+
+  service { 'etcd_service' :
+    ensure  => running,
+    enable  => true,
+    name    => 'etcd.service',
+    require => [ File['etcd_init_script'], Package['oracle-jdk'] ],
   }
 
   # Configure iptables
